@@ -1,0 +1,49 @@
+version: '2'
+services:
+  otrs:
+    image: sonoilmagopancione/otrs-docker
+    ports:
+    - "80:80"
+    links:
+    - mariadb:mariadb
+    - postfix:postfix
+    volumes_from:
+    - data-otrs
+    environment:
+        OTRS_POSTMASTER_FETCH_TIME: 0
+        OTRS_HOSTNAME: support.yourcompany.com
+        OTRS_ADMIN_EMAIL: admin@yourcompany.com
+        OTRS_ROOT_PASSWORD:   root
+        MYSQL_ROOT_PASSWORD: ABfP0jgprh
+        OTRS_DB_PASSWORD: F3e053jtuC
+  mariadb:
+    image:  sonoilmagopancione/otrs-mysql
+    expose:
+    - "3306"
+    volumes_from:
+    -  data
+    environment:
+        MYSQL_ROOT_PASSWORD: ABfP0jgprh
+  postfix:
+     image: sonoilmagopancione/docker-postfix
+     expose:
+     - "25"
+     environment:
+        SMTP_SERVER: test.test.it
+        SMTP_USERNAME:  test
+        SMTP_PASSWORD: test
+        SERVER_HOSTNAME: test
+  data-otrs:
+    image: sonoilmagopancione/otrs-docker
+    volumes:
+    - ./otrs/content:/opt/otrs/Kernel
+    - "./otrs/backup:/var/otrs/backups"
+    - "/etc/localtime:/etc/localtime:ro"
+    command: /bin/true
+
+  data:
+    image:  sonoilmagopancione/otrs-mysql
+    volumes:
+    - "./otrs/db:/var/lib/mysql"
+    - "/etc/localtime:/etc/localtime:ro"
+    command: /bin/true
